@@ -7,8 +7,7 @@ Here I'm going to explain my line of thought and also my choices to acomplish th
 
 I choose Hexagonal architecture (Ports & Adapters) because it was the most natural way to make heterogeneous integrations look the same without leaking their details into the app.
 
-I used this layers to logically make bank1 and bank2 look the same, I didn’t force bank1 → bank2 or bank2 → bank1.
-I defined our own port (BankClient) and mapped both to it
+I used these layers to make Bank1 and Bank2 look the same logically. I didn’t try to make Bank1 look like Bank2, or the other way around. Instead, I defined our own port (BankClient) and mapped both banks to it.
 
 * Domain: plain models (AccountBalance, Transaction). No framework.
   - Bank1 has no currency → we set "UNKNOWN"; Bank2 provides currency.

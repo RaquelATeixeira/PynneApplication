@@ -40,7 +40,7 @@ Controllers/services don’t need to know about those differences
 * AggregationService is @Service that receives List<BankClient> by constructor → DI.
 * BankController receives the service by constructor → DI.
 
-This means adding a Bank3 is just creating Bank3Adapter that implements BankClient. Spring wires it automatically, no other layer changes.
+This means that adding a Bank3 only requires creating a Bank3Adapter that implements BankClient. Spring wires it automatically, and no other layer needs to change.
 
 ## Tests
 
@@ -50,18 +50,16 @@ I divided the tests into three segments:
 * Controller tests to validate the REST contract.
 * Contract tests for Adapter to ensure each adapter properly translates vendor data into the unified domain model.
 * Architecture tests, that protects the intended hexagonal architecture.
-  - This is a bonus I use ArchUnit, they check structural rules of the codebase.
+  - As a bonus, I used ArchUnit to check the structural rules of the codebase.
 
 ## Build layout
 
-I choosed multi-module Maven layout (vendors / core / adapters / web) instead of keeping everything in one big module.
-
-Why? The challenge requires strict isolation, If you put everything in a single module, the compiler will happily let you import com.bank1.* anywhere. The only safeguard would be discipline or ArchUnit rules. 
-It enforces architecture at build time, not just by convention.
+I chose multi-module Maven layout (vendors / core / adapters / web) instead of keeping everything in one big module, because enforces architecture at build time, not just by convention.
+Why? The challenge requires strict isolation, If you put everything in a single module, the compiler will let you import com.bank1.* anywhere. The only safeguard would be discipline or ArchUnit rules.
 
 bank-aggregator/ (parent pom)
 
-├─ vendors/   ← “black box” for com.bank1 / com.bank2 (I didn't changed the code)
+├─ vendors/   ← “black box” for com.bank1 / com.bank2 (I didn't change the code)
 
 ├─ core/      ← domain, ports, application (pure logic)
 
@@ -92,4 +90,4 @@ mvn spring-boot:run
 /api/customers/{id}/balances
 /api/customers/{id}/transactions?from=...&to=...
 ```
-U can use from as 2025-01-01T00:00:00 and 2025-02-01T00:00:00Z as to
+You can use parameter from as 2025-01-01T00:00:00 and 2025-02-01T00:00:00Z as parameter to

@@ -1,1 +1,96 @@
 # PynneApplication
+
+Hello Par, welcome to my challange resolution! Hope u like it.
+Here I'm going to explain my line of thought and also my choices to acomplish the requirements.
+
+## Architecture
+
+I choose Hexagonal architecture (Ports & Adapters) because it was the most natural way to make heterogeneous integrations look the same without leaking their details into the app.
+
+I used this layers to logically make bank1 and bank2 look the same, I didn’t force bank1 → bank2 or bank2 → bank1.
+I defined our own port (BankClient) and mapped both to it
+
+* Domain: plain models (AccountBalance, Transaction). No framework.
+  - Bank1 has no currency → we set "UNKNOWN"; Bank2 provides currency.
+  - Bank1: type is int (1/2) → map to "CREDIT"/"DEBIT"; text → description.
+  - Bank2: type is enum → map to the same strings; text stays in description.
+* Port: interface BankClient = the abstraction the app uses to talk to “any bank”.
+  - long accountId because your vendor code uses primitive long (not String).
+  - fromDate/toDate included because Bank2 requires a date range; Bank1 can ignore or accept it (we call the 3-arg variant).
+  - Return types are our domain objects, not vendor ones.
+  - ```
+    public interface BankClient {
+        String bankId();
+        List<AccountBalance> getBalances(long accountId); // 
+        List<Transaction> getTransactions(long accountId, Date     fromDate, Date toDate);
+    }
+* Adapters: one per bank (Bank1Adapter, Bank2Adapter). Each translates from the vendor’s native API to our domain models.
+    - Bank1Adapter calls Bank1AccountSource.getAccountBalance(long) and getTransactions(long, Date, Date) and maps.
+    - Bank2Adapter calls Bank2AccountSource.getBalance(long) and getTransactions(long, Date, Date) and maps.
+    - Upstream differences are contained inside adapters.
+Controllers/services don’t need to know about those differences
+* Application: AggregationService orchestrates calls across all BankClient implementations.
+    - AggregationService gets all BankClients.
+    - No vendor imports here; it depends only on the port.
+* Web: BankController exposes REST and only calls the service (never vendors).
+    - It only calls AggregationService. It never sees vendor classes.
+
+
+## Dependency Injection
+* Adapters are Spring @Components implementing BankClient
+* AggregationService is @Service that receives List<BankClient> by constructor → DI.
+* BankController receives the service by constructor → DI.
+
+This means adding a Bank3 is just creating Bank3Adapter that implements BankClient. Spring wires it automatically, no other layer changes.
+
+## Tests
+
+I divided the tests into three segments:
+
+* Unit tests for business logic.
+* Controller tests to validate the REST contract.
+* Contract tests for Adapter to ensure each adapter properly translates vendor data into the unified domain model.
+* Architecture tests, that protects the intended hexagonal architecture.
+  - This is a bonus I use ArchUnit, they check structural rules of the codebase.
+
+## Build layout
+
+I choosed multi-module Maven layout (vendors / core / adapters / web) instead of keeping everything in one big module.
+
+Why? The challenge requires strict isolation, If you put everything in a single module, the compiler will happily let you import com.bank1.* anywhere. The only safeguard would be discipline or ArchUnit rules. 
+It enforces architecture at build time, not just by convention.
+
+bank-aggregator/ (parent pom)
+
+├─ vendors/   ← “black box” for com.bank1 / com.bank2 (I didn't changed the code)
+
+├─ core/      ← domain, ports, application (pure logic)
+
+├─ adapters/  ← Bank1Adapter, Bank2Adapter (the only place that imports vendors)
+
+└─ web/       ← Spring Boot app (controllers + main)
+
+
+## 🚀 Running the App
+
+### Prerequisites
+- Java 21+
+- Maven 3.9+
+
+### Build & Test
+```bash
+mvn clean install
+```
+
+### Run
+```bash
+cd web
+mvn spring-boot:run
+```
+
+### Rest Endpoints
+```bash
+/api/customers/{id}/balances
+/api/customers/{id}/transactions?from=...&to=...
+```
+U can use from as 2025-01-01T00:00:00 and 2025-02-01T00:00:00Z as to

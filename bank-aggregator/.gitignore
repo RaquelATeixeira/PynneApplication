@@ -1,0 +1,48 @@
+### Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+.mvn/wrapper/MavenWrapperDownloader.java
+.mvn/wrapper/MavenWrapperDownloader.class
+.settings/
+dependency-reduced-pom.xml
+buildNumber.properties
+
+### Eclipse / IntelliJ / VSCode ###
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+### Logs ###
+*.log
+logs/
+*.out
+
+### OS files ###
+.DS_Store
+Thumbs.db
+
+### Test outputs ###
+/surefire-reports/
+/failsafe-reports/
+/jacoco.exec
+
+### Spring Boot ###
+/.spring-boot-devtools.properties
+
+### Environment / secrets ###
+.env
+*.env
+*.yml.local
+*.yaml.local
+*.properties.local
+
+### Others ###
+/bin/
+/tmp/
+/out/

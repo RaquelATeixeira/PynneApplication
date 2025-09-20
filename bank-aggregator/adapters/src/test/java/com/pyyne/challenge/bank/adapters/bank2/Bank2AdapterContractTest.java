@@ -1,0 +1,11 @@
+package com.pyyne.challenge.bank.adapters.bank2;
+
+import com.pyyne.challenge.bank.adapters.contract.BankClientContractTest;
+import com.pyyne.challenge.bank.ports.BankClient;
+
+public class Bank2AdapterContractTest extends BankClientContractTest {
+    @Override
+    protected BankClient createClient() {
+        return new Bank2Adapter();
+    }
+}

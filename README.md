@@ -20,8 +20,8 @@ I used these layers to make Bank1 and Bank2 look the same logically. I didn’t 
   - ```
     public interface BankClient {
         String bankId();
-        List<AccountBalance> getBalances(long accountId); // 
-        List<Transaction> getTransactions(long accountId, Date     fromDate, Date toDate);
+        List<AccountBalance> getBalances(long accountId); 
+        List<Transaction> getTransactions(long accountId, Date fromDate, Date toDate);
     }
 * Adapters: one per bank (Bank1Adapter, Bank2Adapter). Each translates from the vendor’s native API to our domain models.
     - Bank1Adapter calls Bank1AccountSource.getAccountBalance(long) and getTransactions(long, Date, Date) and maps.
